@@ -1,0 +1,23 @@
+name: Atualizar Dashboard
+on:
+  schedule:
+    - cron: '0 8 * * 1-5'  # seg a sex às 8h
+  workflow_dispatch:         # permite rodar manualmente
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Buscar dados do Pipedrive
+        run: |
+          curl -H "Authorization: Bearer ${{ secrets.PIPEDRIVE_TOKEN }}" \
+          "https://api.pipedrive.com/v1/deals?pipeline_id=63&status=open&limit=500" \
+          > pipedrive-data.json
+      - name: Commit e push
+        run: |
+          git config --global user.email "bot@tax.co"
+          git config --global user.name "Dashboard Bot"
+          git add .
+          git commit -m "Dados atualizados: $(date '+%d/%m/%Y %H:%M')"
+          git push
